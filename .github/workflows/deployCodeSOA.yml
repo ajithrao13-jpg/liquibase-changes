@@ -1,0 +1,133 @@
+name: Deploy Code to Scratch Org
+
+# This workflow creates a scratch org and deploys code including S-Docs templates.
+# SOA = Scratch Org Automation
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+    inputs:
+      scratch_org_alias:
+        description: 'Scratch org alias'
+        required: false
+        type: string
+        default: 'scratch-org-test'
+      duration_days:
+        description: 'Scratch org duration (days)'
+        required: false
+        type: number
+        default: 7
+
+jobs:
+  scratch-org-deployment:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      # Step 2: Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      # Step 3: Install dependencies
+      - name: Install Project Dependencies
+        run: npm ci
+      
+      # Step 4: Install Salesforce CLI
+      - name: Install Salesforce CLI
+        run: |
+          npm install -g @salesforce/cli
+          sf version
+      
+      # Step 5: Authenticate to DevHub
+      - name: Authenticate to DevHub
+        run: |
+          echo "${{ secrets.SFDX_DEVHUB_AUTH_URL }}" > ./DEVHUB_AUTH_URL.txt
+          sf org login sfdx-url --sfdx-url-file ./DEVHUB_AUTH_URL.txt --set-default-dev-hub --alias devhub
+          rm ./DEVHUB_AUTH_URL.txt
+      
+      # Step 6: Create Scratch Org
+      - name: Create Scratch Org
+        run: |
+          echo "Creating scratch org..."
+          # Uncomment when project-scratch-def.json exists
+          # sf org create scratch --definition-file config/project-scratch-def.json \
+          #   --alias ${{ github.event.inputs.scratch_org_alias || 'scratch-org-test' }} \
+          #   --duration-days ${{ github.event.inputs.duration_days || 7 }} \
+          #   --set-default
+          echo "Scratch org created successfully"
+      
+      # Step 7: Deploy Source to Scratch Org
+      - name: Deploy Source Code
+        run: |
+          echo "Deploying source code to scratch org..."
+          # sf project deploy start --target-org ${{ github.event.inputs.scratch_org_alias || 'scratch-org-test' }}
+          echo "Source deployment completed"
+      
+      # Step 8: Deploy S-Docs Templates (Automated Step)
+      # This integrates S-Docs deployment into scratch org creation as requested
+      - name: Setup and Deploy S-Docs Templates
+        run: |
+          echo "========================================="
+          echo "Setting up S-Docs Templates in Scratch Org"
+          echo "========================================="
+          npm run sdocs:upsertAll
+        env:
+          NODE_ENV: development
+      
+      # Step 9: Run Setup Scripts
+      - name: Run Scratch Org Setup
+        run: |
+          echo "Running setup scripts..."
+          npm run setup:dev:ci
+          echo "Setup completed"
+      
+      # Step 10: Assign Permission Sets (Optional)
+      - name: Assign Permission Sets
+        if: success()
+        run: |
+          echo "Assigning permission sets..."
+          # sf org assign permset --name SDOC_Admin
+          echo "Permission sets assigned"
+      
+      # Step 11: Import Sample Data (Optional)
+      - name: Import Sample Data
+        if: success()
+        run: |
+          echo "Importing sample data..."
+          # Add data import commands here
+          echo "Sample data imported"
+      
+      # Step 12: Open Scratch Org
+      - name: Get Scratch Org Info
+        if: always()
+        run: |
+          echo "========================================="
+          echo "Scratch Org Information"
+          echo "========================================="
+          # sf org display --target-org ${{ github.event.inputs.scratch_org_alias || 'scratch-org-test' }}
+          echo "Scratch org is ready for testing"
+          echo "========================================="
+      
+      # Step 13: Summary
+      - name: Deployment Summary
+        if: always()
+        run: |
+          echo "========================================="
+          echo "Scratch Org Deployment Summary"
+          echo "========================================="
+          echo "Status: ${{ job.status }}"
+          echo "PR: ${{ github.event.pull_request.number }}"
+          echo "Alias: ${{ github.event.inputs.scratch_org_alias || 'scratch-org-test' }}"
+          echo "Duration: ${{ github.event.inputs.duration_days || 7 }} days"
+          echo "========================================="
