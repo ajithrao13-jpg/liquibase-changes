@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Salesforce
+.sfdx/
+.sf/
+.localdevserver/
+*.dup
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+.DS_Store
+
+# Temp files
+tmp/
+temp/
+*.tmp
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Salesforce Auth
+*_AUTH_URL.txt
+*.url

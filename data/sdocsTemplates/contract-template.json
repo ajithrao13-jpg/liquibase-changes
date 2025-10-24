@@ -1,0 +1,9 @@
+{
+  "Name": "Standard Contract Template",
+  "SDOC__Template_Type__c": "Document",
+  "SDOC__Description__c": "Standard contract template for client agreements",
+  "SDOC__Template_Status__c": "Active",
+  "SDOC__Object_API_Name__c": "Contract",
+  "SDOC__File_Type__c": "PDF",
+  "SDOC__Template_Label__c": "Standard Contract"
+}

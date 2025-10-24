@@ -1,0 +1,28 @@
+{
+  "name": "mbms-sdocs-deployment",
+  "version": "1.0.0",
+  "description": "Memorial Benefits Management Systems - Automated S-Docs Deployment",
+  "scripts": {
+    "sdocs:upsertAll": "node scripts/sdocs-upserter.js",
+    "setup:dev:local": "npm run setup:dev:base && npm run sdocs:upsertAll",
+    "setup:dev:ci": "npm run setup:dev:base && npm run sdocs:upsertAll",
+    "setup:dev:lowerSandbox": "npm run setup:dev:base && npm run sdocs:upsertAll",
+    "setup:dev:higherSandbox": "npm run setup:dev:base && npm run sdocs:upsertAll",
+    "setup:dev:base": "echo 'Running base development setup...'",
+    "test": "echo 'No tests specified yet'"
+  },
+  "keywords": [
+    "salesforce",
+    "sdocs",
+    "deployment",
+    "automation"
+  ],
+  "author": "SF DevOps Team",
+  "license": "ISC",
+  "dependencies": {
+    "jsforce": "^2.0.0"
+  },
+  "devDependencies": {
+    "dotenv": "^16.0.3"
+  }
+}
