@@ -2,7 +2,7 @@
 
 ## ✅ Implementation Complete!
 
-This repository contains the complete implementation for automating S-Docs template deployment across all Salesforce environments.
+This repository contains the complete implementation for automating S-Docs template deployment across all Salesforce environments for the Memorial Benefits Management System (MBMS).
 
 ---
 
@@ -16,7 +16,7 @@ cd liquibase-changes
 npm install
 
 # Authenticate to Salesforce
-sf org login web --alias myorg
+sf org login web --alias mbms-salesforce
 
 # Deploy S-Docs templates
 npm run sdocs:upsertAll
@@ -44,15 +44,17 @@ npm run sdocs:upsertAll
 ### Acceptance Criteria: ✅ All Met
 
 1. ✅ **Command for deploying S-Docs is integrated into deployment scripts**
-   - All `setup:dev:*` scripts include S-Docs deployment
-   - Single command: `npm run sdocs:upsertAll`
+   - Scripts updated: `setup:dev:local`, `setup:dev:ci`
+   - Scripts added: `setup:dev:lowerSandbox`, `setup:dev:higherSandbox`
+   - All scripts include `npm run sdocs:upsertAll` as final step
 
 2. ✅ **Command for deploying S-Docs is integrated into scratch org creation process**
    - Workflow: `.github/workflows/deployCodeSOA.yml`
    - Automatically deploys S-Docs when creating scratch orgs
 
 3. ✅ **Command for deploying S-Docs is integrated into post-refresh scripts**
-   - All setup scripts: `setup:dev:local`, `setup:dev:ci`, `setup:dev:lowerSandbox`, `setup:dev:higherSandbox`
+   - All setup scripts suitable for post-refresh scenarios
+   - `setup:dev:lowerSandbox` and `setup:dev:higherSandbox` specifically for sandbox refreshes
 
 ---
 
@@ -67,15 +69,15 @@ liquibase-changes/
 │   ├── README.md              # Template documentation
 │   ├── example-template.json  # Example template
 │   └── contract-template.json # Contract template
-├── scripts/
-│   └── sdocs-upserter.js      # Main deployment script
-├── package.json               # npm scripts and dependencies
-├── SETUP_GUIDE.md             # Comprehensive guide (14KB)
+├── package.json               # npm scripts (MBMS configuration)
+├── SETUP_GUIDE.md             # Comprehensive guide (15KB)
 ├── QUICKSTART.md              # Quick start guide
 ├── ARCHITECTURE.md            # Architecture documentation
 ├── TROUBLESHOOTING.md         # Troubleshooting guide
 └── INDEX.md                   # Documentation index
 ```
+
+**Note**: The actual S-Docs deployment is handled by existing MBMS scripts in `resources/scripts/node/upsertSdocs.js` (not included in this repository).
 
 ---
 
@@ -84,10 +86,10 @@ liquibase-changes/
 | Command | Description | Use Case |
 |---------|-------------|----------|
 | `npm run sdocs:upsertAll` | Deploy all S-Docs templates | Standalone deployment |
-| `npm run setup:dev:local` | Setup local development | Local environment |
+| `npm run setup:dev:local` | Setup local scratch org | Local development |
 | `npm run setup:dev:ci` | Setup CI environment | Continuous integration |
-| `npm run setup:dev:lowerSandbox` | Setup lower sandbox | Sandbox refresh |
-| `npm run setup:dev:higherSandbox` | Setup higher sandbox | Production-like sandbox |
+| `npm run setup:dev:lowerSandbox` | Setup lower sandbox | Post-refresh, dev/test sandboxes |
+| `npm run setup:dev:higherSandbox` | Setup higher sandbox | UAT/staging sandboxes |
 
 **All setup commands automatically include S-Docs deployment!**
 
@@ -96,19 +98,25 @@ liquibase-changes/
 ## 🔄 How It Works
 
 ```
-Developer runs command
+Developer runs setup command
         ↓
-npm run sdocs:upsertAll
+npm run setup:dev:local (or ci/lowerSandbox/higherSandbox)
         ↓
-scripts/sdocs-upserter.js
+1. Install dependencies
+2. Install required SF plugins (toolbox, skuid, texei)
+3. Create/configure Salesforce org
+4. Deploy metadata (dependencies, app, devops, static)
+5. Assign permission sets
+6. Run apex scripts
+7. Import test data
+8. Create users and personas
         ↓
-1. Verify Salesforce connection
-2. Read templates from data/sdocsTemplates/
-3. Validate template structure
-4. Upsert to Salesforce org
-5. Report results
+9. Deploy S-Docs templates ✨ (npm run sdocs:upsertAll)
+   - Query for MBMS RecordType ID
+   - Inject RecordType ID into templates
+   - Upsert templates via resources/scripts/node/upsertSdocs.js
         ↓
-✅ Templates deployed successfully
+✅ Environment ready with S-Docs templates deployed
 ```
 
 ---

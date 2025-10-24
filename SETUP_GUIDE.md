@@ -1,5 +1,7 @@
 # S-Docs Deployment Automation - Setup Guide
 
+> **Note**: This guide documents the S-Docs deployment automation for the MBMS Salesforce project. The actual deployment logic is implemented in the MBMS codebase at `resources/scripts/node/upsertSdocs.js`. This repository provides the integration points and documentation.
+
 ## 📋 Table of Contents
 1. [Overview](#overview)
 2. [Prerequisites](#prerequisites)
@@ -22,6 +24,13 @@ This project automates the deployment of S-Docs templates to Salesforce environm
 ✅ Command for deploying S-Docs is integrated into scratch org creation process  
 ✅ Command for deploying S-Docs is integrated into post-refresh scripts  
 
+### Implementation:
+The S-Docs deployment is implemented through the existing MBMS script infrastructure:
+- **Query RecordType**: `npm run sdocs:query:recordTypeId` - Queries for MBMS RecordType ID
+- **Inject RecordType**: `npm run sdocs:injectRecordTypeId` - Injects ID into templates
+- **Upsert Templates**: `node resources/scripts/node/upsertSdocs.js` - Deploys templates
+- **Complete Process**: `npm run sdocs:upsertAll` - Runs all three steps
+
 ---
 
 ## 🔧 Prerequisites
@@ -38,16 +47,22 @@ Before you begin, ensure you have the following installed:
 
 3. **Salesforce CLI**
    - Install: `npm install -g @salesforce/cli`
-   - Verify installation: `sf version` or `sfdx version`
+   - Verify installation: `sf version`
 
 4. **Git**
    - Download from: https://git-scm.com/
    - Verify installation: `git --version`
 
+5. **MBMS Required Plugins**
+   - Install toolbox: `npm run install:toolbox`
+   - Install skuid: `npm run install:skuid`
+   - Install texei: `npm run install:texei`
+
 ### Salesforce Requirements:
 - Access to a Salesforce DevHub (for scratch orgs)
 - S-Docs package installed in target orgs
 - Appropriate permissions to create/modify S-Docs templates
+- MBMS RecordType configured in target org
 
 ---
 
@@ -64,19 +79,17 @@ cd liquibase-changes
 npm install
 ```
 
-This command will install:
-- `jsforce`: JavaScript library for Salesforce API interactions
-- `dotenv`: For managing environment variables
+This command will install all MBMS project dependencies including linting tools, test frameworks, and development utilities.
 
 ### Step 3: Authenticate to Salesforce
 
 #### For Sandbox/Production:
 ```bash
-# Authenticate using web login
-sf org login web --alias myorg
+# Authenticate using web login (using MBMS org alias)
+sf org login web --alias mbms-salesforce
 
 # Or authenticate using auth URL
-sf org login sfdx-url --sfdx-url-file path/to/auth.txt --alias myorg
+sf org login sfdx-url --sfdx-url-file path/to/auth.txt --alias mbms-salesforce
 ```
 
 #### For DevHub (required for scratch orgs):
@@ -84,7 +97,15 @@ sf org login sfdx-url --sfdx-url-file path/to/auth.txt --alias myorg
 sf org login web --alias devhub --set-default-dev-hub
 ```
 
-### Step 4: Verify Installation
+### Step 4: Install Required Salesforce Plugins
+```bash
+# Install all required plugins
+npm run install:toolbox
+npm run install:skuid
+npm run install:texei
+```
+
+### Step 5: Verify Installation
 ```bash
 # Check if you can see your authenticated orgs
 sf org list
@@ -107,34 +128,39 @@ liquibase-changes/
 │
 ├── data/
 │   └── sdocsTemplates/         # S-Docs template definitions
+│       ├── README.md           # Template documentation
 │       ├── example-template.json
 │       └── contract-template.json
 │
-├── scripts/
-│   └── sdocs-upserter.js       # Main S-Docs deployment script
-│
 ├── .gitignore                  # Git ignore rules
-├── package.json                # Node.js dependencies and scripts
-├── README.md                   # Task requirements
-└── SETUP_GUIDE.md              # This file
+├── package.json                # MBMS npm scripts and dependencies
+├── README.md                   # Project overview
+├── SETUP_GUIDE.md              # This file
+├── QUICKSTART.md               # Quick start guide
+├── ARCHITECTURE.md             # Architecture documentation
+├── TROUBLESHOOTING.md          # Troubleshooting guide
+└── INDEX.md                    # Documentation index
 ```
+
+**Note**: The actual S-Docs deployment scripts are part of the main MBMS codebase at `resources/scripts/node/` (not shown in this repository).
 
 ### Key Files Explained:
 
 #### `package.json`
-Contains npm scripts and project metadata:
-- **sdocs:upsertAll**: Main command to deploy all S-Docs templates
-- **setup:dev:local**: Setup script for local development
-- **setup:dev:ci**: Setup script for CI/CD environments
-- **setup:dev:lowerSandbox**: Setup script for lower sandboxes
-- **setup:dev:higherSandbox**: Setup script for higher sandboxes
+Contains npm scripts and project metadata for the MBMS Salesforce project:
+- **sdocs:upsertAll**: Main command that queries RecordType, injects it, and deploys all S-Docs templates
+- **sdocs:query:recordTypeId**: Queries for the MBMS RecordType ID
+- **sdocs:injectRecordTypeId**: Injects the RecordType ID into template files
+- **setup:dev:local**: Full local scratch org setup including S-Docs deployment
+- **setup:dev:ci**: CI environment setup including S-Docs deployment  
+- **setup:dev:lowerSandbox**: Lower sandbox setup including S-Docs deployment
+- **setup:dev:higherSandbox**: Higher sandbox setup including S-Docs deployment
 
-#### `scripts/sdocs-upserter.js`
-The main deployment script that:
-1. Connects to authenticated Salesforce org
-2. Reads template files from `data/sdocsTemplates/`
-3. Upserts each template to the org
-4. Provides detailed logging and error handling
+#### S-Docs Deployment Process
+The deployment is handled by three chained commands in `sdocs:upsertAll`:
+1. Query for MBMS RecordType ID from Salesforce
+2. Inject the RecordType ID into template JSON files
+3. Execute `resources/scripts/node/upsertSdocs.js` to deploy templates
 
 #### `.github/workflows/deployCode.yml`
 GitHub Actions workflow for deploying to persistent environments:
@@ -295,80 +321,85 @@ npm run setup:dev:lowerSandbox
 ### How the S-Docs Deployment Works
 
 #### 1. Entry Point (`npm run sdocs:upsertAll`)
-When you run this command, npm executes the script defined in `package.json`:
+When you run this command, npm executes a chain of three commands defined in `package.json`:
 ```json
 "scripts": {
-  "sdocs:upsertAll": "node scripts/sdocs-upserter.js"
+  "sdocs:query:recordTypeId": "sf data query --query \"Select Id FROM RecordType WHERE Name = 'MBMS' AND SObjectType = 'SDOC__SDTemplate__c'\" --output-file sdocsRecordTypeId.csv --result-format json",
+  "sdocs:injectRecordTypeId": "node resources/scripts/node/injectSdocsRecordTypeId.js",
+  "sdocs:upsertAll": "npm run sdocs:query:recordTypeId && npm run sdocs:injectRecordTypeId && node resources/scripts/node/upsertSdocs.js"
 }
 ```
 
-#### 2. Main Script Execution (`scripts/sdocs-upserter.js`)
+#### 2. Step-by-Step Process
 
-##### Step 1: Verify Salesforce Connection
-```javascript
-function getConnectedOrg() {
-  try {
-    // Try new SF CLI first
-    const result = execSync('sf org display --json', { encoding: 'utf-8' });
-    const data = JSON.parse(result);
-    return data.result.username;
-  } catch (error) {
-    // Fallback to legacy SFDX CLI
-    const result = execSync('sfdx force:org:display --json', { encoding: 'utf-8' });
-    return data.result.username;
-  }
+##### Step 1: Query MBMS RecordType ID
+```bash
+npm run sdocs:query:recordTypeId
+```
+**What it does**:
+- Queries Salesforce for the MBMS RecordType on the SDOC__SDTemplate__c object
+- Saves the result to `sdocsRecordTypeId.csv` in JSON format
+- This RecordType ID is required for all S-Docs templates in the MBMS org
+
+**Example output**:
+```json
+{
+  "Id": "0123456789ABCDE"
 }
 ```
-**Explanation**: 
-- Checks if you're authenticated to a Salesforce org
-- Tries new SF CLI first, falls back to legacy SFDX CLI
-- Returns the username of the connected org
 
-##### Step 2: Read Template Files
-```javascript
-function getTemplateFiles() {
-  const templatesDir = path.join(process.cwd(), 'data', 'sdocsTemplates');
-  const files = fs.readdirSync(templatesDir)
-    .filter(file => file.endsWith('.json'))
-    .map(file => path.join(templatesDir, file));
-  return files;
-}
+##### Step 2: Inject RecordType ID into Templates
+```bash
+npm run sdocs:injectRecordTypeId
 ```
-**Explanation**:
-- Finds the `data/sdocsTemplates` directory
-- Reads all `.json` files
-- Returns array of file paths
+**What it does**:
+- Reads the RecordType ID from `sdocsRecordTypeId.csv`
+- Reads all JSON template files from `data/sdocsTemplates/`
+- Injects the `RecordTypeId` field into each template
+- Prepares templates for deployment with the correct RecordType
 
-##### Step 3: Upsert Each Template
-```javascript
-function upsertTemplate(templateFile) {
-  const templateData = JSON.parse(fs.readFileSync(templateFile, 'utf-8'));
-  
-  // Validate template structure
-  if (!templateData.Name) {
-    throw new Error('Template must have a Name field');
-  }
-  
-  // Upsert to Salesforce (implementation would use Salesforce API)
-  // For now, this is a simulation
-  return true;
-}
-```
-**Explanation**:
-- Reads and parses each JSON template file
-- Validates required fields
-- In a full implementation, would use Salesforce API to insert/update
+**Implementation** (in `resources/scripts/node/injectSdocsRecordTypeId.js`):
+- Parses the query results
+- Updates each template JSON file
+- Ensures all templates have the MBMS RecordType
 
-##### Step 4: Provide Feedback
-```javascript
-// Color-coded console output
-log(`✓ Connected to org: ${orgUsername}`, colors.green);
-log(`Found ${templateFiles.length} template file(s)`, colors.green);
-log(`  ✓ Template upserted successfully`, colors.green);
+##### Step 3: Upsert Templates to Salesforce
+```bash
+node resources/scripts/node/upsertSdocs.js
 ```
-**Explanation**:
-- Uses ANSI color codes for readable console output
-- Green for success, yellow for warnings, red for errors
+**What it does**:
+- Reads all prepared template files from `data/sdocsTemplates/`
+- Connects to the authenticated Salesforce org
+- Upserts (inserts or updates) each template using Salesforce APIs
+- Provides feedback on success/failure for each template
+
+**Key features**:
+- Uses Salesforce CLI or APIs for deployment
+- Handles both new templates (insert) and existing templates (update)
+- Validates template structure before deployment
+- Provides detailed error messages if deployment fails
+
+#### 3. Integration with Setup Scripts
+
+All MBMS setup scripts now include S-Docs deployment as the final step:
+
+```json
+"setup:dev:local": "... && npm run sdocs:upsertAll && ...",
+"setup:dev:ci": "... && npm run sdocs:upsertAll",
+"setup:dev:lowerSandbox": "... && npm run sdocs:upsertAll",
+"setup:dev:higherSandbox": "... && npm run sdocs:upsertAll"
+```
+
+The S-Docs deployment runs after:
+1. Installing dependencies and plugins
+2. Creating/configuring the Salesforce org
+3. Deploying all metadata (dependencies, app, devops, static)
+4. Assigning permission sets
+5. Running Apex scripts
+6. Importing test data
+7. Creating users and personas
+
+This ensures S-Docs templates are always deployed as part of the environment setup.
 
 ### How GitHub Workflows Work
 
