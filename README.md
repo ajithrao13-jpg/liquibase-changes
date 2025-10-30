@@ -83,6 +83,18 @@ This is your complete guide with executive summaries, quick start instructions, 
 - Cost optimization strategies
 - GCP monitoring setup
 
+#### 📈 [K6 Reports for Lambda and BigQuery](./k6-reports-lambda-bigquery.md)
+**Generate comprehensive K6 reports with Lambda and BigQuery metrics**
+
+**Topics Covered**:
+- HTML report generation with custom metrics
+- Lambda metrics in K6 reports (duration, cold starts, errors)
+- BigQuery metrics in K6 reports (inserts, success rate, cost)
+- Combined multi-component reports
+- Export to JSON, CSV, CloudWatch, InfluxDB
+- Grafana dashboard integration
+- Automated report generation scripts
+
 ---
 
 ## 🎯 Key Takeaways for Tomorrow's Discussion
@@ -125,6 +137,7 @@ This is your complete guide with executive summaries, quick start instructions, 
 ├── multi-cloud-pipeline-testing.md        # AWS → GCP pipeline testing
 ├── lambda-performance-testing.md          # Lambda-specific testing
 ├── bigquery-performance-testing.md        # BigQuery performance & cost
+├── k6-reports-lambda-bigquery.md          # K6 reports with Lambda/BQ metrics
 │
 ├── k6-test-scripts/                       # Ready-to-use K6 scripts
 │   ├── README.md                          # Script usage guide
