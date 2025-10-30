@@ -1,8 +1,8 @@
 # liquibase-changes
 
-## 📊 K6 Performance Testing Documentation for Kinesis + Lambda Pipeline
+## 📊 K6 Performance Testing Documentation for Multi-Cloud Data Pipeline
 
-This repository contains comprehensive documentation and resources for performance testing a Kinesis + Lambda pipeline using K6.
+This repository contains comprehensive documentation and resources for performance testing multi-cloud data pipelines using K6, covering AWS Kinesis, Lambda, and GCP BigQuery.
 
 ### 🚀 Quick Start
 
@@ -14,7 +14,7 @@ This is your complete guide with executive summaries, quick start instructions, 
 
 ## 📚 Documentation
 
-### Manager Discussion Points
+### Core Guides
 
 #### 1️⃣ [How Teams Use K6 on AWS](./k6-performance-testing-guide.md)
 **Answers**: "Check with teams who use k6 against their application on AWS and how they collect performance metrics"
@@ -44,6 +44,44 @@ This is your complete guide with executive summaries, quick start instructions, 
 - Load variations: 10 → 2000+ records/second
 - 5 testing phases with complete k6 scripts
 - Success criteria and reporting structure
+
+### Extended Guides for Multi-Cloud Architecture
+
+#### 🌐 [Multi-Cloud Pipeline Testing](./multi-cloud-pipeline-testing.md)
+**Comprehensive guide for AWS → GCP data pipeline**
+
+**Topics Covered**:
+- Client AWS accounts (ECS, CloudWatch Logs)
+- Log Forwarder Lambda performance testing
+- Tenant-specific Kinesis stream monitoring
+- Central aggregation Lambda testing
+- Cross-cloud data transfer (AWS → GCP via VPN)
+- End-to-end pipeline performance testing
+- Unified monitoring across AWS and GCP
+
+#### ⚡ [AWS Lambda Performance Testing](./lambda-performance-testing.md)
+**Deep-dive into Lambda function performance**
+
+**Topics Covered**:
+- Direct Lambda invocation testing
+- API Gateway + Lambda testing
+- Event-driven Lambda (SQS/SNS/EventBridge)
+- Cold start optimization
+- Memory and cost optimization
+- Custom application metrics
+- Lambda-specific alerts and monitoring
+
+#### 📊 [GCP BigQuery Performance Testing](./bigquery-performance-testing.md)
+**BigQuery streaming inserts and query performance**
+
+**Topics Covered**:
+- Streaming insert performance testing with K6
+- Batch insert optimization
+- Query performance testing
+- BigQuery-specific metrics
+- Table partitioning and clustering
+- Cost optimization strategies
+- GCP monitoring setup
 
 ---
 
@@ -75,14 +113,25 @@ This is your complete guide with executive summaries, quick start instructions, 
 .
 ├── README.md                              # This file
 ├── PERFORMANCE_TESTING_README.md          # Complete quick start guide
+├── MEETING_PREP.md                        # Meeting preparation guide
+├── QUICK_REFERENCE.md                     # At-a-glance tables
+│
+├── Core Guides (Original Requirements)
 ├── k6-performance-testing-guide.md        # Point #1: K6 on AWS
 ├── kinesis-lambda-metrics.md              # Point #2: Metrics to collect
 ├── performance-testing-plan.md            # Point #3: Testing plan
+│
+├── Extended Guides (Multi-Cloud Architecture)
+├── multi-cloud-pipeline-testing.md        # AWS → GCP pipeline testing
+├── lambda-performance-testing.md          # Lambda-specific testing
+├── bigquery-performance-testing.md        # BigQuery performance & cost
+│
 ├── k6-test-scripts/                       # Ready-to-use K6 scripts
 │   ├── README.md                          # Script usage guide
 │   ├── baseline-100b.js                   # 100-byte payload test
 │   ├── baseline-500b.js                   # 500-byte payload test
 │   └── spike-test.js                      # Spike/burst traffic test
+│
 └── cloudwatch-dashboards/                 # CloudWatch dashboard templates
     ├── README.md                          # Dashboard setup guide
     └── pipeline-overview.json             # Main performance dashboard
@@ -92,22 +141,33 @@ This is your complete guide with executive summaries, quick start instructions, 
 
 ## ✅ What's Ready for You
 
-### Documentation ✅
+### Core Documentation ✅
 - [x] Complete guide on K6 usage and metrics collection
 - [x] Comprehensive metrics list with implementation examples
 - [x] Detailed testing plan with 5 phases over 4 weeks
 - [x] Executive summary for manager discussion
 
+### Multi-Cloud Architecture Documentation ✅
+- [x] End-to-end multi-cloud pipeline testing guide
+- [x] AWS Lambda performance testing and optimization
+- [x] GCP BigQuery streaming and query performance
+- [x] Cross-cloud transfer monitoring (AWS → GCP)
+- [x] Multi-tenant architecture testing strategies
+
 ### Test Scripts ✅
 - [x] Baseline test - 100-byte payload
 - [x] Baseline test - 500-byte payload  
 - [x] Spike test for resilience testing
+- [x] Lambda-specific test scripts
+- [x] BigQuery streaming insert tests
 - [x] Complete usage instructions
 
 ### Monitoring ✅
 - [x] CloudWatch dashboard template
+- [x] GCP monitoring setup examples
 - [x] Dashboard deployment guide
 - [x] Key metrics visualization
+- [x] Multi-cloud monitoring strategies
 
 ---
 
