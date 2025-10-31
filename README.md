@@ -47,6 +47,18 @@ This is your complete guide with executive summaries, quick start instructions, 
 
 ### Extended Guides for Multi-Cloud Architecture
 
+#### 🔄 [How K6 Tests the Complete Flow](./how-k6-tests-complete-flow.md)
+**Understanding how K6 performs load testing across the integrated pipeline**
+
+**Topics Covered**:
+- How K6 sends payloads through Kinesis → Lambda → BigQuery
+- End-to-end testing methodology
+- Trace ID tracking and verification
+- Component-by-component vs. full pipeline testing
+- Real-world examples with 500+ records/second
+- Performance measurement at each stage
+- Load generation and validation strategies
+
 #### 🌐 [Multi-Cloud Pipeline Testing](./multi-cloud-pipeline-testing.md)
 **Comprehensive guide for AWS → GCP data pipeline**
 
@@ -134,6 +146,7 @@ This is your complete guide with executive summaries, quick start instructions, 
 ├── performance-testing-plan.md            # Point #3: Testing plan
 │
 ├── Extended Guides (Multi-Cloud Architecture)
+├── how-k6-tests-complete-flow.md          # How K6 tests the pipeline flow
 ├── multi-cloud-pipeline-testing.md        # AWS → GCP pipeline testing
 ├── lambda-performance-testing.md          # Lambda-specific testing
 ├── bigquery-performance-testing.md        # BigQuery performance & cost
